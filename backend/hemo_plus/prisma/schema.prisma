@@ -1,0 +1,108 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Genero {
+  MASCULINO
+  FEMININO
+}
+
+enum EstadoCivil {
+  SOLTEIRO
+  CASADO
+  VIUVO
+}
+
+enum Cor {
+  BRANCA
+  PRETA
+  PARDA
+  AMARELA
+  INDIGENA
+}
+
+enum TipoSanguineo {
+  A_POSITIVO
+  A_NEGATIVO
+  B_POSITIVO
+  B_NEGATIVO
+  AB_POSITIVO
+  AB_NEGATIVO
+  O_POSITIVO
+  O_NEGATIVO
+}
+
+model Doador {
+  id  String  @id @default(uuid())
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  nome  String  @db.VarChar(255)
+  data_nascimento DateTime @db.Date
+  genero Genero
+  estado_civil EstadoCivil
+  cor Cor
+  cartao_sus String @db.VarChar(18) @unique
+  cpf String @db.VarChar(14) @unique
+  senha String
+  tipo_sanguineo TipoSanguineo
+  peso Float
+  altura Float
+  telefone String @db.VarChar(15)
+  endereco Endereco?
+  campanhas Campanha[] @relation(name: "solicitante")
+  pacientes Campanha[] @relation(name: "paciente")
+  doacoes Doacao[]
+  @@map("doadores")
+}
+
+model Endereco {
+  id  String  @id @default(uuid())
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  cep String @db.VarChar(9)
+  rua String @db.VarChar(255)
+  bairro String @db.VarChar(100)
+  numero String @db.VarChar(10)
+  complemento String @db.VarChar(100)
+  cidade String @db.VarChar(50)
+  doador Doador @relation(fields: [doadorId], references: [id])
+  doadorId String @unique
+  @@map("enderecos")
+}
+
+model Campanha {
+  id  String  @id @default(uuid())
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  titulo String @db.VarChar(50)
+  descricao String @db.VarChar(500)
+  foto Bytes @db.ByteA
+  aceito Boolean @default(false)
+  tipo_sanguineo TipoSanguineo[]
+  solicitante Doador @relation(name: "solicitante", fields: [solicitanteId], references: [id])
+  solicitanteId String
+  paciente Doador @relation(name: "paciente", fields: [pacienteId], references: [id])
+  pacienteId String
+  doacoes Doacao[]
+  @@map("campanhas")
+}
+
+model Doacao {
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  doador Doador @relation(fields: [doadorId], references: [id])
+  doadorId String
+  campanha Campanha @relation(fields: [campanhaId], references: [id])
+  campanhaId String
+  tipo_sanguineo TipoSanguineo
+  @@id([doadorId, campanhaId])
+  @@map("doacoes")
+}

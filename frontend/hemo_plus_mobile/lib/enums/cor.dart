@@ -1,0 +1,6 @@
+enum Cor {
+  BRANCO,
+  PRETO,
+  AMARELO,
+  INDIGENA
+}
